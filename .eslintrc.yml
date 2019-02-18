@@ -11,7 +11,7 @@ parserOptions:
   sourceType: module
 
 extends:
-  - 'airbnb'
+  - 'airbnb-base'
   - 'prettier'
   - 'plugin:jest/recommended'
 

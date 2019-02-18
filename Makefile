@@ -7,12 +7,6 @@ publish:
 lint:
 	yarn run eslint .
 
-test:
-	yarn run test
-
-test.watch:
-	yarn run test --watch
-
 build:
 	yarn run build
 
