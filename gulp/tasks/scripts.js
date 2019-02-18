@@ -4,8 +4,8 @@ import webpackConfig from '../../webpack.config.babel';
 
 const scripts = () =>
   gulp
-    .src(['*.js', '!_*.js'], { cwd: 'src/scripts' })
+    .src(['*.js', '!_*.js'], { cwd: 'src' })
     .pipe(webpackStream(webpackConfig))
-    .pipe(gulp.dest('dist/assets/javascripts'));
+    .pipe(gulp.dest('dist'));
 
 export default scripts;
