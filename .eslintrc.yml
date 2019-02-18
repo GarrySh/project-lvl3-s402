@@ -1,0 +1,27 @@
+plugins:
+  - jest
+
+env:
+  node: true
+  jest: true
+  browser: true
+
+parserOptions:
+  ecmaVersion: 6
+  sourceType: module
+
+extends:
+  - 'airbnb'
+  - 'prettier'
+  - 'plugin:jest/recommended'
+
+rules:
+  'no-console': 0
+  'import/no-extraneous-dependencies':
+    [
+      'error',
+      {
+        'devDependencies':
+          ['__tests__', 'gulp/**/*.js', 'gulpfile.babel.js', 'webpack.config.babel.js'],
+      },
+    ]
