@@ -6,5 +6,10 @@ html(lang='en')
     meta(http-equiv='X-UA-Compatible', content='ie=edge')
     title RSS Reader
   body
-    h1 RSS Reader
-    
+  main.container
+    .jumbotron.m-3
+      form
+        .form-group
+          label(for="inputAddress") RSS url:
+          input.form-control(type="text" id="inputAddress" placeholder="Enter RSS url")
+        button.btn.btn-primary Load RSS
