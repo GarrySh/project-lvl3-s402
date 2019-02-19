@@ -34,6 +34,6 @@ export default {
   },
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),
-    new HtmlWebpackPlugin({ template: 'src/index.pug' }),
+    new HtmlWebpackPlugin({ template: 'src/public/index.pug' }),
   ],
 };
