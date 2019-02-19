@@ -1,6 +1,9 @@
-# Frontend Boilerplate
+# RSS Reader
 
-Boilerplate new for front-end projects
+[![Build Status](https://travis-ci.org/GarrySh/boilerplate-node.svg?branch=master)](https://travis-ci.org/GarrySh/boilerplate-node)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c0a1a90a4e54b8b6e22c/maintainability)](https://codeclimate.com/github/GarrySh/project-lvl3-s402/maintainability)
+
+[Demo version](https://garrysh.github.io/project-lvl3-s402/)
 
 ## Requirements
 
@@ -10,8 +13,8 @@ Boilerplate new for front-end projects
 ## Setup
 
 ```sh
-git clone https://github.com/GarrySh/boilerplate-frontend.git project-name
-cd project-name
+git clone https://github.com/GarrySh/project-lvl3-s402 rss-reader
+cd rss-reader
 rm -rf .git
 git init
 make install
