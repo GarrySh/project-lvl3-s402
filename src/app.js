@@ -1,27 +1,31 @@
 import validator from 'validator';
+import axios from 'axios';
 import { watch } from 'melanke-watchjs';
+import parse from './parser';
 
 export default () => {
   const state = {
     formInputUI: {
-      valid: true,
+      valid: null,
       clear: true,
       inputDisable: true,
-      value: '',
+      url: '',
+      error: null,
     },
     feeds: [],
+    articles: [],
   };
 
-  const isValid = value => validator.isURL(value) && !state.feeds.includes(value);
+  const isValid = url => validator.isURL(url) && !state.feeds.includes(url);
 
   const keyupHandle = event => {
-    const { value } = event.target;
-    state.formInputUI.value = value;
-    if (value === '') {
+    const url = event.target.value;
+    state.formInputUI.url = url;
+    if (url === '') {
       state.formInputUI.clear = true;
       state.formInputUI.valid = true;
       state.formInputUI.inputDisable = true;
-    } else if (isValid(value)) {
+    } else if (isValid(url)) {
       state.formInputUI.clear = false;
       state.formInputUI.valid = true;
       state.formInputUI.inputDisable = false;
@@ -33,9 +37,26 @@ export default () => {
     console.log('state changed', state);
   };
 
+  // const urlWithCorsProxy = state.formInputUI.url;
   const submitHandle = event => {
     event.preventDefault();
-    console.log('form submited', event);
+    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${state.formInputUI.url}`;
+    axios
+      .get(urlWithCorsProxy)
+      .then(response => {
+        console.log('response', response);
+        const { feedTitle, feedDescription, feedArticles, error } = parse(response.data);
+        if (error) {
+          Promise.reject(error);
+        }
+        state.feeds.push({ feedTitle, feedDescription });
+        state.articles.push(...feedArticles);
+      })
+      .catch(error => {
+        state.formInputUI.error = error;
+        console.error(error);
+      });
+    // console.log('form submited', event);
   };
 
   const input = document.querySelector('.feed-form__input');
@@ -44,17 +65,11 @@ export default () => {
   const form = document.querySelector('.feed-form');
   form.addEventListener('submit', submitHandle);
 
-  watch(state.formInputUI, 'clear', () => {
-    if (state.formInputUI.clear) {
-      form.classList.remove('was-validated');
-    } else {
-      form.classList.add('was-validated');
-    }
-    console.log('form clear?', state.formInputUI.clear);
-  });
-
   watch(state.formInputUI, 'valid', () => {
-    if (state.formInputUI.valid) {
+    if (state.formInputUI.clear) {
+      input.classList.remove('is-invalid');
+      input.classList.remove('is-valid');
+    } else if (state.formInputUI.valid) {
       input.classList.add('is-valid');
       input.classList.remove('is-invalid');
     } else {
@@ -62,5 +77,14 @@ export default () => {
       input.classList.remove('is-valid');
     }
     console.log('form valid?', state.formInputUI.valid);
+  });
+
+  const button = document.querySelector('.feed-form__button');
+  watch(state.formInputUI, 'inputDisable', () => {
+    if (state.formInputUI.inputDisable) {
+      button.setAttribute('disabled', 'disabled');
+    } else {
+      button.removeAttribute('disabled');
+    }
   });
 };

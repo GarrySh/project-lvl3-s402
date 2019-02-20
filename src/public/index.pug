@@ -12,4 +12,10 @@ html(lang='en')
           .form-group
             label(for="inputAddress") RSS url:
             input.form-control.feed-form__input(type="text" id="inputAddress" placeholder="Enter RSS url")
-          button.btn.btn-primary.feed-form__button(type="submit") Load RSS
+            .invalid-feedback Please enter valid RSS url
+          button.btn.btn-primary.feed-form__button(type="submit" disabled) Load RSS
+      .row
+        .col-4
+          ul.feeds-list
+        .col
+          ul.articles-list
