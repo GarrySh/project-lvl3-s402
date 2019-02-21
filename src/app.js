@@ -6,62 +6,68 @@ import parse from './parser';
 
 export default () => {
   const state = {
-    formInputUI: {
+    inputFormUI: {
       valid: null,
       clear: true,
       inputDisable: true,
       url: '',
       error: null,
+      load: false,
     },
     feeds: [],
     articles: [],
   };
 
+  window.state = state;
+
   const isValid = url => validator.isURL(url) && !state.feeds.some(feed => feed.url === url);
 
   const keyupHandle = event => {
     const url = event.target.value;
-    state.formInputUI.url = url;
+    state.inputFormUI.url = url;
     if (url === '') {
-      state.formInputUI.clear = true;
-      state.formInputUI.valid = true;
-      state.formInputUI.inputDisable = true;
+      state.inputFormUI.clear = true;
+      state.inputFormUI.valid = true;
+      state.inputFormUI.inputDisable = true;
     } else if (isValid(url)) {
-      state.formInputUI.clear = false;
-      state.formInputUI.valid = true;
-      state.formInputUI.inputDisable = false;
+      state.inputFormUI.clear = false;
+      state.inputFormUI.valid = true;
+      state.inputFormUI.inputDisable = false;
     } else {
-      state.formInputUI.clear = false;
-      state.formInputUI.valid = false;
-      state.formInputUI.inputDisable = true;
+      state.inputFormUI.clear = false;
+      state.inputFormUI.valid = false;
+      state.inputFormUI.inputDisable = true;
     }
     console.log('state changed', state);
   };
 
   const submitHandle = event => {
     event.preventDefault();
-    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${state.formInputUI.url}`;
+    state.inputFormUI.load = true;
+    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${state.inputFormUI.url}`;
     axios
       .get(urlWithCorsProxy)
       .then(response => {
         // console.log('response', response);
         const { feedTitle, feedDescription, feedArticles, error } = parse(response.data);
         if (error) {
-          // console.log('error de', error);
-          return Promise.reject(new Error({ message: error }));
+          throw new Error(error);
         }
         state.feeds.push({
           title: feedTitle,
           description: feedDescription,
-          url: state.formInputUI.url,
+          url: state.inputFormUI.url,
         });
         state.articles.push(...feedArticles);
-        return response;
       })
       .catch(error => {
+        const { message } = error;
         window.err = error;
-        state.formInputUI.error = error.message;
-        console.error(error);
+        state.inputFormUI.error = message;
+        console.log('error message', error);
+      })
+      .finally(() => {
+        state.inputFormUI.load = false;
       });
     // console.log('form submited', event);
   };
@@ -72,23 +78,23 @@ export default () => {
   const form = document.querySelector('.feed-form');
   form.addEventListener('submit', submitHandle);
 
-  watch(state.formInputUI, 'valid', () => {
-    if (state.formInputUI.clear) {
+  watch(state.inputFormUI, 'valid', () => {
+    if (state.inputFormUI.clear) {
       input.classList.remove('is-invalid');
       input.classList.remove('is-valid');
-    } else if (state.formInputUI.valid) {
+    } else if (state.inputFormUI.valid) {
       input.classList.add('is-valid');
       input.classList.remove('is-invalid');
     } else {
       input.classList.add('is-invalid');
       input.classList.remove('is-valid');
     }
-    console.log('form valid?', state.formInputUI.valid);
+    console.log('form valid?', state.inputFormUI.valid);
   });
 
   const button = document.querySelector('.feed-form__button');
-  watch(state.formInputUI, 'inputDisable', () => {
-    if (state.formInputUI.inputDisable) {
+  watch(state.inputFormUI, 'inputDisable', () => {
+    if (state.inputFormUI.inputDisable) {
       button.setAttribute('disabled', 'disabled');
     } else {
       button.removeAttribute('disabled');
@@ -136,24 +142,21 @@ export default () => {
     });
   });
 
-  watch(state.formInputUI, 'error', () => {
-    articles.innerHTML = '';
-    state.articles.forEach(article => {
-      const articleEl = document.createElement('li');
-      articleEl.classList.add('mb-3');
-      const articleDate = formatDate(article.date, 'DD MMM YYYY HH:mm');
-      articleEl.innerHTML = `
-        <div class="card border-secondary style="width: 18rem;">
-          <div class="card-header">
-          ${article.title}
-          </div>
-          <div class="card-body text-secondary">
-            <h6 class="card-subtitle mb-2 text-muted">${articleDate}</h6>
-            <p class="card-text">${article.description}</p>
-          </div>
-        </div>
-      `;
-      articles.appendChild(articleEl);
-    });
+  const message = document.querySelector('.feed-form__message');
+  watch(state.inputFormUI, 'error', () => {
+    if (state.inputFormUI.error) {
+      message.innerHTML = `<div class="alert alert-warning alert-dismissible fade show" role="alert">
+        ${state.inputFormUI.error}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>`;
+    } else {
+      message.innerHTML = '';
+    }
+  });
+
+  watch(state.inputFormUI, 'url', () => {
+    input.value = state.inputFormUI.url;
   });
 };
