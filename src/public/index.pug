@@ -9,11 +9,11 @@ html(lang='en')
     main.container
       .jumbotron.m-3
         form.feed-form
+          .feed-form__message.alert.alert-info.alert-dismissible.fade         
           .form-group
             label(for="inputAddress") RSS url:
             input.form-control.feed-form__input(type="text" id="inputAddress" placeholder="Enter RSS url")
             .invalid-feedback Please enter valid RSS url
-            .feed-form__message
           button.btn.btn-primary.feed-form__button(type="submit" disabled) Load RSS
       .row
         .col-4
