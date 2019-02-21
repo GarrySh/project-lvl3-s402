@@ -2,20 +2,21 @@ const getArticles = dom => {
   const articleNodeList = dom.querySelectorAll('item');
   const articles = Array.from(articleNodeList).map(article => ({
     title: article.querySelector('title').textContent,
-    link: article.querySelector('link').textContent,
+    url: article.querySelector('link').textContent,
     description: article.querySelector('description').textContent,
-    pubDate: article.querySelector('pubDate').textContent,
+    date: article.querySelector('pubDate').textContent,
   }));
   return articles;
 };
 
 export default data => {
-  const domParser = new DOMParser();
-  const dom = domParser.parseFromString(data, 'application/xml');
+  console.log('start parsing data', data);
+  const parser = new DOMParser();
+  const dom = parser.parseFromString(data, 'application/xml');
   if (dom.querySelector('parsererror')) {
     return { error: 'document parse error' };
   }
-  // window.dom = dom;
+  window.dom = dom;
   const feedTitle = dom.querySelector('channel > title').textContent;
   const feedDescription = dom.querySelector('channel > description').textContent;
   return { feedTitle, feedDescription, feedArticles: getArticles(dom), error: null };

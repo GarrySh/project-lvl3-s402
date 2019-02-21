@@ -1,6 +1,7 @@
 import validator from 'validator';
 import axios from 'axios';
 import { watch } from 'melanke-watchjs';
+import { format as formatDate } from 'date-fns';
 import parse from './parser';
 
 export default () => {
@@ -16,7 +17,7 @@ export default () => {
     articles: [],
   };
 
-  const isValid = url => validator.isURL(url) && !state.feeds.includes(url);
+  const isValid = url => validator.isURL(url) && !state.feeds.some(feed => feed.url === url);
 
   const keyupHandle = event => {
     const url = event.target.value;
@@ -37,23 +38,29 @@ export default () => {
     console.log('state changed', state);
   };
 
-  // const urlWithCorsProxy = state.formInputUI.url;
   const submitHandle = event => {
     event.preventDefault();
     const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${state.formInputUI.url}`;
     axios
       .get(urlWithCorsProxy)
       .then(response => {
-        console.log('response', response);
+        // console.log('response', response);
         const { feedTitle, feedDescription, feedArticles, error } = parse(response.data);
         if (error) {
-          Promise.reject(error);
+          // console.log('error de', error);
+          return Promise.reject(new Error({ message: error }));
         }
-        state.feeds.push({ feedTitle, feedDescription });
+        state.feeds.push({
+          title: feedTitle,
+          description: feedDescription,
+          url: state.formInputUI.url,
+        });
         state.articles.push(...feedArticles);
+        return response;
       })
       .catch(error => {
-        state.formInputUI.error = error;
+        window.err = error;
+        state.formInputUI.error = error.message;
         console.error(error);
       });
     // console.log('form submited', event);
@@ -86,5 +93,67 @@ export default () => {
     } else {
       button.removeAttribute('disabled');
     }
+  });
+
+  const feeds = document.querySelector('.feeds-list');
+  watch(state, 'feeds', () => {
+    feeds.innerHTML = '';
+    state.feeds.forEach(feed => {
+      const feedEl = document.createElement('li');
+      feedEl.classList.add('mb-3');
+      feedEl.innerHTML = `
+        <div class="card border-secondary style="width: 18rem;">
+          <div class="card-body text-secondary">
+            <h5 class="card-title">${feed.title}</h5>
+            <p class="card-text">${feed.description}</p>
+            <a href="${feed.url}" class="card-link">Feed link</a>
+          </div>
+        </div>
+      `;
+      feeds.appendChild(feedEl);
+    });
+  });
+
+  const articles = document.querySelector('.articles-list');
+  watch(state, 'articles', () => {
+    articles.innerHTML = '';
+    state.articles.forEach(article => {
+      const articleEl = document.createElement('li');
+      articleEl.classList.add('mb-3');
+      const articleDate = formatDate(article.date, 'DD MMM YYYY HH:mm');
+      articleEl.innerHTML = `
+        <div class="card border-secondary style="width: 18rem;">
+          <div class="card-header">
+          ${article.title}
+          </div>
+          <div class="card-body text-secondary">
+            <h6 class="card-subtitle mb-2 text-muted">${articleDate}</h6>
+            <p class="card-text">${article.description}</p>
+          </div>
+        </div>
+      `;
+      articles.appendChild(articleEl);
+    });
+  });
+
+  watch(state.formInputUI, 'error', () => {
+    articles.innerHTML = '';
+    state.articles.forEach(article => {
+      const articleEl = document.createElement('li');
+      articleEl.classList.add('mb-3');
+      const articleDate = formatDate(article.date, 'DD MMM YYYY HH:mm');
+      articleEl.innerHTML = `
+        <div class="card border-secondary style="width: 18rem;">
+          <div class="card-header">
+          ${article.title}
+          </div>
+          <div class="card-body text-secondary">
+            <h6 class="card-subtitle mb-2 text-muted">${articleDate}</h6>
+            <p class="card-text">${article.description}</p>
+          </div>
+        </div>
+      `;
+      articles.appendChild(articleEl);
+    });
   });
 };
