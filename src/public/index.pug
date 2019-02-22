@@ -6,17 +6,17 @@ html(lang='en')
     meta(http-equiv='X-UA-Compatible', content='ie=edge')
     title RSS Reader
   body
-    main.container
+    main.container#app
       .jumbotron.m-3
-        form.feed-form
-          .feed-form__message.alert.alert-info.alert-dismissible.fade         
+        form
+          .alert.alert-info.alert-dismissible.fade         
           .form-group
             label(for="inputAddress") RSS url:
-            input.form-control.feed-form__input(type="text" id="inputAddress" placeholder="Enter RSS url")
+            input.form-control(type="text" id="inputAddress" placeholder="Enter RSS url")
             .invalid-feedback Please enter valid RSS url
           button.btn.btn-primary.feed-form__button(type="submit" disabled) Load RSS
       .row
         .col-4
-          ul.feeds-list.list-unstyled.ml-3
+          ul#feeds-list.list-unstyled.ml-3
         .col
-          ul.articles-list.list-unstyled.mr-3
+          ul#articles-list.list-unstyled.mr-3

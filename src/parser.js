@@ -10,13 +10,11 @@ const getArticles = dom => {
 };
 
 export default data => {
-  console.log('start parsing data', data);
   const parser = new DOMParser();
   const dom = parser.parseFromString(data, 'application/xml');
   if (dom.querySelector('parsererror')) {
-    return { error: 'document parse error' };
+    return { error: 'feed parse error' };
   }
-  window.dom = dom;
   const feedTitle = dom.querySelector('channel > title').textContent;
   const feedDescription = dom.querySelector('channel > description').textContent;
   return { feedTitle, feedDescription, feedArticles: getArticles(dom), error: null };

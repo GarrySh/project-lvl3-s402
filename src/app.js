@@ -42,7 +42,7 @@ export default () => {
         if (error) {
           throw new Error(error);
         }
-        state.formUI.message = 'suxxesss';
+        state.formUI.message = 'feed successfully added';
         state.formUI.messageType = 'info';
         state.formUI.formState = 'clear';
         state.feeds.push({
@@ -61,10 +61,10 @@ export default () => {
       });
   };
 
-  const input = document.querySelector('.feed-form__input');
+  const input = document.querySelector('#app input');
   input.addEventListener('keyup', keyupHandle);
 
-  const form = document.querySelector('.feed-form');
+  const form = document.querySelector('#app form');
   form.addEventListener('submit', submitHandle);
 
   watch(state.formUI, 'formState', formStateWatch(state));

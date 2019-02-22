@@ -1,8 +1,8 @@
 import { format as formatDate } from 'date-fns';
 
 export const formStateWatch = state => () => {
-  const input = document.querySelector('.feed-form__input');
-  const button = document.querySelector('.feed-form__button');
+  const input = document.querySelector('#app input');
+  const button = document.querySelector('#app button');
 
   switch (state.formUI.formState) {
     case 'clear':
@@ -29,11 +29,11 @@ export const formStateWatch = state => () => {
       break;
     default:
   }
-  console.log('formState?', state.formUI.formState);
+  // console.log('formState?', state.formUI.formState);
 };
 
 export const messageWatch = state => () => {
-  const message = document.querySelector('.feed-form__message');
+  const message = document.querySelector('#app .alert');
 
   switch (state.formUI.messageType) {
     case 'none':
@@ -52,11 +52,11 @@ export const messageWatch = state => () => {
       break;
     default:
   }
-  console.log('message type', state.formUI.messageType);
+  // console.log('message type', state.formUI.messageType);
 };
 
 export const feedsWatch = state => () => {
-  const feeds = document.querySelector('.feeds-list');
+  const feeds = document.getElementById('feeds-list');
 
   feeds.innerHTML = '';
   state.feeds.forEach(feed => {
@@ -74,7 +74,7 @@ export const feedsWatch = state => () => {
 };
 
 export const articlesWatch = state => () => {
-  const articles = document.querySelector('.articles-list');
+  const articles = document.getElementById('articles-list');
 
   articles.innerHTML = '';
   state.articles.forEach(article => {
