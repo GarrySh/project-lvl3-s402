@@ -6,7 +6,7 @@ export const formStateWatch = state => () => {
 
   switch (state.formUI.formState) {
     case 'clear':
-      button.disabled = false;
+      button.disabled = true;
       input.disabled = false;
       input.classList.remove('is-valid', 'is-invalid');
       input.value = '';
@@ -35,24 +35,34 @@ export const formStateWatch = state => () => {
 export const messageWatch = state => () => {
   const message = document.querySelector('#app .alert');
 
-  switch (state.formUI.messageType) {
+  switch (state.formUI.messageState) {
     case 'none':
       message.classList.remove('show');
       message.textContent = '';
       break;
-    case 'error':
+    case 'error-parse':
       message.classList.add('show', 'alert-danger');
       message.classList.remove('alert-info');
-      message.textContent = state.formUI.message;
+      message.textContent = 'Document parse error';
+      break;
+    case 'error-404':
+      message.classList.add('show', 'alert-danger');
+      message.classList.remove('alert-info');
+      message.textContent = 'Page not found';
+      break;
+    case 'error-unknown':
+      message.classList.add('show', 'alert-danger');
+      message.classList.remove('alert-info');
+      message.textContent = 'Oops something went wrong, please try again';
       break;
     case 'info':
       message.classList.add('show', 'alert-info');
       message.classList.remove('alert-danger');
-      message.textContent = state.formUI.message;
+      message.textContent = 'Feed successfully added';
       break;
     default:
   }
-  // console.log('message type', state.formUI.messageType);
+  // console.log('message type', state.formUI.messageState);
 };
 
 export const feedsWatch = state => () => {
@@ -66,7 +76,6 @@ export const feedsWatch = state => () => {
         <div class="card-body text-secondary">
           <h5 class="card-title">${feed.title}</h5>
           <p class="card-text">${feed.description}</p>
-          <a href="${feed.url}" class="card-link">Feed link</a>
         </div>
       </div>`;
     feeds.appendChild(feedEl);
@@ -84,11 +93,16 @@ export const articlesWatch = state => () => {
     articleEl.innerHTML = `
       <div class="card border-secondary style="width: 18rem;">
         <div class="card-header">
-        ${article.title}
+          ${article.title}
         </div>
         <div class="card-body text-secondary">
           <h6 class="card-subtitle mb-2 text-muted">${articleDate}</h6>
-          <p class="card-text">${article.description}</p>
+          <a class="btn btn-secondary" href="${article.url}">Go to the article</a>
+          <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#articleModal" data-id="${
+            article.id
+          }">
+            Open article description
+          </button>
         </div>
       </div>
     `;

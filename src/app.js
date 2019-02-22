@@ -1,4 +1,6 @@
 import validator from 'validator';
+import 'bootstrap';
+import $ from 'jquery';
 import axios from 'axios';
 import { watch, callWatchers } from 'melanke-watchjs';
 import parse from './parser';
@@ -9,8 +11,7 @@ export default () => {
     formUI: {
       formState: 'clear',
       url: '',
-      message: '',
-      messageType: 'none',
+      messageState: 'none',
     },
     feeds: [],
     articles: [],
@@ -18,7 +19,7 @@ export default () => {
 
   const isValid = url => validator.isURL(url) && !state.feeds.some(feed => feed.url === url);
 
-  const keyupHandle = event => {
+  const inputHandle = event => {
     const url = event.target.value;
     state.formUI.url = url;
     if (url === '') {
@@ -28,7 +29,7 @@ export default () => {
     } else {
       state.formUI.formState = 'invalid';
     }
-    state.formUI.messageType = 'none';
+    state.formUI.messageState = 'none';
   };
 
   const submitHandle = event => {
@@ -42,8 +43,7 @@ export default () => {
         if (error) {
           throw new Error(error);
         }
-        state.formUI.message = 'feed successfully added';
-        state.formUI.messageType = 'info';
+        state.formUI.messageState = 'info';
         state.formUI.formState = 'clear';
         state.feeds.push({
           title: feedTitle,
@@ -52,26 +52,39 @@ export default () => {
         });
         state.articles.push(...feedArticles);
       })
-      .catch(error => {
-        const { message } = error;
-        state.formUI.message = message;
-        state.formUI.messageType = 'error';
+      .catch(({ message }) => {
+        if (message === 'parseError') {
+          state.formUI.messageState = 'error-parse';
+        } else if (message === 'Request failed with status code 404') {
+          state.formUI.messageState = 'error-404';
+        } else {
+          state.formUI.messageState = 'error-unknown';
+        }
         state.formUI.formState = 'valid';
-        // console.log('error message', error);
       });
   };
 
   const input = document.querySelector('#app input');
-  input.addEventListener('keyup', keyupHandle);
+  input.addEventListener('keyup', inputHandle);
+  input.addEventListener('input', inputHandle);
 
   const form = document.querySelector('#app form');
   form.addEventListener('submit', submitHandle);
 
   watch(state.formUI, 'formState', formStateWatch(state));
-  watch(state.formUI, 'messageType', messageWatch(state));
+  watch(state.formUI, 'messageState', messageWatch(state));
   watch(state, 'feeds', feedsWatch(state));
   watch(state, 'articles', articlesWatch(state));
 
   callWatchers(state.formUI, 'formState');
-  callWatchers(state.formUI, 'messageType');
+  callWatchers(state.formUI, 'messageState');
+
+  $('#articleModal').on('show.bs.modal', function showModal(event) {
+    const button = $(event.relatedTarget);
+    const articleId = button.data('id').toString();
+    const article = state.articles.find(item => item.id === articleId);
+    const modal = $(this);
+    const modalBody = modal.find('.modal-body');
+    modal.find(modalBody).text(article.description);
+  });
 };

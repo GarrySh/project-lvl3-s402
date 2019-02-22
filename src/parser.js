@@ -1,6 +1,9 @@
+import { uniqueId } from 'lodash';
+
 const getArticles = dom => {
   const articleNodeList = dom.querySelectorAll('item');
   const articles = Array.from(articleNodeList).map(article => ({
+    id: uniqueId(),
     title: article.querySelector('title').textContent,
     url: article.querySelector('link').textContent,
     description: article.querySelector('description').textContent,
@@ -13,7 +16,7 @@ export default data => {
   const parser = new DOMParser();
   const dom = parser.parseFromString(data, 'application/xml');
   if (dom.querySelector('parsererror')) {
-    return { error: 'feed parse error' };
+    return { error: 'parseError' };
   }
   const feedTitle = dom.querySelector('channel > title').textContent;
   const feedDescription = dom.querySelector('channel > description').textContent;
