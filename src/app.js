@@ -1,6 +1,6 @@
 import validator from 'validator';
 import axios from 'axios';
-import { watch } from 'melanke-watchjs';
+import { watch, callWatchers } from 'melanke-watchjs';
 import parse from './parser';
 import { formStateWatch, messageWatch, feedsWatch, articlesWatch } from './watchers';
 
@@ -71,4 +71,7 @@ export default () => {
   watch(state.formUI, 'messageType', messageWatch(state));
   watch(state, 'feeds', feedsWatch(state));
   watch(state, 'articles', articlesWatch(state));
+
+  callWatchers(state.formUI, 'formState');
+  callWatchers(state.formUI, 'messageType');
 };
