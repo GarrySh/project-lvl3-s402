@@ -1,7 +1,8 @@
-import validator from 'validator';
 import 'bootstrap';
 import $ from 'jquery';
 import axios from 'axios';
+import { isURL } from 'validator';
+import { isEqual } from 'lodash';
 import { watch, callWatchers } from 'melanke-watchjs';
 import parse from './parser';
 import { formStateWatch, messageWatch, feedsWatch, articlesWatch } from './watchers';
@@ -16,8 +17,10 @@ export default () => {
     feeds: [],
     articles: [],
   };
+  window.state = state;
 
-  const isValid = url => validator.isURL(url) && !state.feeds.some(feed => feed.url === url);
+  const updateInterval = 5000;
+  const isValid = url => isURL(url) && !state.feeds.some(feed => feed.url === url);
 
   const inputHandle = event => {
     const url = event.target.value;
@@ -32,25 +35,48 @@ export default () => {
     state.formUI.messageState = 'none';
   };
 
+  const getSiteData = url => {
+    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${url}`;
+    return axios.get(urlWithCorsProxy).then(response => {
+      const { feed, articles, error } = parse(response.data);
+      if (error) {
+        throw new Error(error);
+      }
+      return { feed, articles };
+    });
+  };
+
+  const updateArticles = (url, feedId) => {
+    setTimeout(() => {
+      getSiteData(url)
+        .then(({ articles }) => {
+          const mapCondition = ({ title, date }) => ({ title, date });
+          const newArticles = articles.map(mapCondition);
+          const savedArticles = state.articles
+            .filter(article => article.feedId === feedId)
+            .map(mapCondition);
+          if (!isEqual(newArticles, savedArticles)) {
+            const articlesWithId = articles.map(article => ({ ...article, feedId }));
+            state.articles = state.articles
+              .filter(article => article.feedId !== feedId)
+              .concat(articlesWithId);
+          }
+        })
+        .catch(error => console.error('error on update articles', error.message))
+        .finally(() => updateArticles(url, feedId));
+    }, updateInterval);
+  };
+
   const submitHandle = event => {
     event.preventDefault();
     state.formUI.formState = 'load';
-    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${state.formUI.url}`;
-    axios
-      .get(urlWithCorsProxy)
-      .then(response => {
-        const { feedTitle, feedDescription, feedArticles, error } = parse(response.data);
-        if (error) {
-          throw new Error(error);
-        }
+    getSiteData(state.formUI.url)
+      .then(({ feed, articles }) => {
         state.formUI.messageState = 'info';
         state.formUI.formState = 'clear';
-        state.feeds.push({
-          title: feedTitle,
-          description: feedDescription,
-          url: state.formUI.url,
-        });
-        state.articles.push(...feedArticles);
+        state.feeds.push({ ...feed, url: state.formUI.url });
+        state.articles.push(...articles);
+        updateArticles(state.formUI.url, feed.id);
       })
       .catch(({ message }) => {
         if (message === 'parseError') {

@@ -29,7 +29,6 @@ export const formStateWatch = state => () => {
       break;
     default:
   }
-  // console.log('formState?', state.formUI.formState);
 };
 
 export const messageWatch = state => () => {
@@ -62,7 +61,6 @@ export const messageWatch = state => () => {
       break;
     default:
   }
-  // console.log('message type', state.formUI.messageState);
 };
 
 export const feedsWatch = state => () => {
