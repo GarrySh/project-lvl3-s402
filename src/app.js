@@ -1,101 +1,19 @@
 import 'bootstrap';
 import $ from 'jquery';
-import axios from 'axios';
-import { isURL } from 'validator';
-import { isEqual } from 'lodash';
 import { watch, callWatchers } from 'melanke-watchjs';
-import parse from './parser';
+import State from './State';
 import { formStateWatch, messageWatch, feedsWatch, articlesWatch } from './watchers';
+import { inputHandle, submitHandle } from './handlers';
 
 export default () => {
-  const state = {
-    formUI: {
-      formState: 'clear',
-      url: '',
-      messageState: 'none',
-    },
-    feeds: [],
-    articles: [],
-  };
-  window.state = state;
-
-  const updateInterval = 5000;
-  const isValid = url => isURL(url) && !state.feeds.some(feed => feed.url === url);
-
-  const inputHandle = event => {
-    const url = event.target.value;
-    state.formUI.url = url;
-    if (url === '') {
-      state.formUI.formState = 'clear';
-    } else if (isValid(url)) {
-      state.formUI.formState = 'valid';
-    } else {
-      state.formUI.formState = 'invalid';
-    }
-    state.formUI.messageState = 'none';
-  };
-
-  const getSiteData = url => {
-    const urlWithCorsProxy = `https://cors-anywhere.herokuapp.com/${url}`;
-    return axios.get(urlWithCorsProxy).then(response => {
-      const { feed, articles, error } = parse(response.data);
-      if (error) {
-        throw new Error(error);
-      }
-      return { feed, articles };
-    });
-  };
-
-  const updateArticles = (url, feedId) => {
-    setTimeout(() => {
-      getSiteData(url)
-        .then(({ articles }) => {
-          const mapCondition = ({ title, date }) => ({ title, date });
-          const newArticles = articles.map(mapCondition);
-          const savedArticles = state.articles
-            .filter(article => article.feedId === feedId)
-            .map(mapCondition);
-          if (!isEqual(newArticles, savedArticles)) {
-            const articlesWithId = articles.map(article => ({ ...article, feedId }));
-            state.articles = state.articles
-              .filter(article => article.feedId !== feedId)
-              .concat(articlesWithId);
-          }
-        })
-        .catch(error => console.error('error on update articles', error.message))
-        .finally(() => updateArticles(url, feedId));
-    }, updateInterval);
-  };
-
-  const submitHandle = event => {
-    event.preventDefault();
-    state.formUI.formState = 'load';
-    getSiteData(state.formUI.url)
-      .then(({ feed, articles }) => {
-        state.formUI.messageState = 'info';
-        state.formUI.formState = 'clear';
-        state.feeds.push({ ...feed, url: state.formUI.url });
-        state.articles.push(...articles);
-        updateArticles(state.formUI.url, feed.id);
-      })
-      .catch(({ message }) => {
-        if (message === 'parseError') {
-          state.formUI.messageState = 'error-parse';
-        } else if (message === 'Request failed with status code 404') {
-          state.formUI.messageState = 'error-404';
-        } else {
-          state.formUI.messageState = 'error-unknown';
-        }
-        state.formUI.formState = 'valid';
-      });
-  };
+  const state = new State();
 
   const input = document.querySelector('#app input');
-  input.addEventListener('keyup', inputHandle);
-  input.addEventListener('input', inputHandle);
+  input.addEventListener('keyup', inputHandle(state));
+  input.addEventListener('input', inputHandle(state));
 
   const form = document.querySelector('#app form');
-  form.addEventListener('submit', submitHandle);
+  form.addEventListener('submit', submitHandle(state));
 
   watch(state.formUI, 'formState', formStateWatch(state));
   watch(state.formUI, 'messageState', messageWatch(state));
