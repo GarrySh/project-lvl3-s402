@@ -1,9 +1,9 @@
 # RSS Reader
 
-[![Build Status](https://travis-ci.org/GarrySh/boilerplate-node.svg?branch=master)](https://travis-ci.org/GarrySh/boilerplate-node)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c0a1a90a4e54b8b6e22c/maintainability)](https://codeclimate.com/github/GarrySh/project-lvl3-s402/maintainability)
+[![Build Status](https://travis-ci.org/GarrySh/rss-reader.svg?branch=master)](https://travis-ci.org/GarrySh/rss-reader)
+[![Maintainability](https://api.codeclimate.com/v1/badges/5f7b15f53d415352398e/maintainability)](https://codeclimate.com/github/GarrySh/rss-reader/maintainability)
 
-[Demo version](https://garrysh.github.io/project-lvl3-s402/)
+[Demo version](https://garrysh.github.io/rss-reader/)
 
 ## Requirements
 
@@ -13,7 +13,7 @@
 ## Setup
 
 ```sh
-git clone https://github.com/GarrySh/project-lvl3-s402 rss-reader
+git clone https://github.com/GarrySh/rss-reader rss-reader
 cd rss-reader
 rm -rf .git
 git init
